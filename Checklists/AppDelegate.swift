@@ -2,9 +2,6 @@
 //  AppDelegate.swift
 //  Checklists
 //
-//  Created by Christopher Wooldridge on 12/4/17.
-//  Copyright © 2017 7stud. All rights reserved.
-//
 
 import UIKit
 
