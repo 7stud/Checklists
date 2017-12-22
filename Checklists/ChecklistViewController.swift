@@ -6,8 +6,9 @@
 
 import UIKit
 
-class ChecklistViewController: UITableViewController {
-    
+class ChecklistViewController: UITableViewController,
+                               ItemDetailViewControllerDelegate
+{
     var items: [ChecklistItem]
     
     required init?(coder aDecoder: NSCoder) {
@@ -32,6 +33,7 @@ class ChecklistViewController: UITableViewController {
         
     }
     
+    // MARK: - @IBAction methods:
     @IBAction func addItem() {
         
         let newRowIndex = items.count
@@ -47,6 +49,47 @@ class ChecklistViewController: UITableViewController {
         print("added item")
     }
     
+    //MARK: - ItemDetailViewControllerDelegate methods:
+    func itemDetailViewControllerDidCancel(_ controller: ItemDetailViewController) {
+        print("DidCancel delegate")
+        navigationController?.popViewController(animated: true)
+    }
+    func itemDetailViewController(_ controller: ItemDetailViewController,
+                               didFinishAdding item: ChecklistItem) {
+        let newRow = items.count
+        items.append(item)
+        let indexPath = IndexPath(row: newRow, section: 0)
+        tableView.insertRows(at: [indexPath], with: .automatic)
+        navigationController?.popViewController (animated: true)
+    }
+    func itemDetailViewController(_ controller: ItemDetailViewController,
+                               didFinishEditing item: ChecklistItem) {
+        
+        if let row = items.index(of: item) {
+            let indexPath = IndexPath(row: row, section:0)
+            if let cell = tableView.cellForRow(at: indexPath) {
+                let label = cell.viewWithTag(1000) as! UILabel
+                label.text = item.text
+                navigationController?.popViewController(animated: true)
+            }
+        }
+    }
+    
+    // MARK: - UIViewController methods:
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "AddItem" {
+            let newViewController = segue.destination as! ItemDetailViewController
+            newViewController.delegate = self
+        }
+        else if segue.identifier == "EditItem" {
+            let newViewController = segue.destination as! ItemDetailViewController
+            newViewController.delegate = self
+            
+            if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
+                newViewController.itemToEdit = items[indexPath.row]
+            }
+        }
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -58,6 +101,7 @@ class ChecklistViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: - UITableViewDelegate methods:
     override func tableView(_ tableView: UITableView,
                             didSelectRowAt indexPath: IndexPath)
     {
@@ -71,6 +115,7 @@ class ChecklistViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    // MARK: - UITableViewDataSource methods:
     override func tableView(_ tableView: UITableView,
                             numberOfRowsInSection section: Int)
                             -> Int {
@@ -101,16 +146,27 @@ class ChecklistViewController: UITableViewController {
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
     
+    // MARK: - Custom methods
     func configureCheckmark(forCell cell: UITableViewCell,
                             with item: ChecklistItem)
     {
-        cell.accessoryType = (item.checked ? .checkmark : .none)
+        let checkLabel = cell.viewWithTag(1001) as! UILabel
+        
+        if item.checked {
+            checkLabel.text = "✓"
+        }
+        else {
+            checkLabel.text = ""
+        }
+        
+        //cell.accessoryType = (item.checked ? .checkmark : .none)
     }
     
     func configureText(forCell cell: UITableViewCell, with item: ChecklistItem) {
         let label = cell.viewWithTag(1000) as! UILabel
         label.text = item.text
     }
+    
     
 }
 
