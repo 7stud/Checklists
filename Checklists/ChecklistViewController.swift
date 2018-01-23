@@ -10,6 +10,7 @@ class ChecklistViewController: UITableViewController,
                                ItemDetailViewControllerDelegate
 {
     var items: [ChecklistItem] = []
+    var checklist: Checklist!
     /*
     required init?(coder aDecoder: NSCoder) {
         items = [ChecklistItem]()
@@ -54,6 +55,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     //MARK: - ItemDetailViewControllerDelegate methods:
+    
     func itemDetailViewControllerDidCancel(_ controller: ItemDetailViewController) {
         print("DidCancel delegate")
         navigationController?.popViewController(animated: true)
@@ -83,6 +85,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     // MARK: - UIViewController methods:
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddItem" {
             let newViewController = segue.destination as! ItemDetailViewController
@@ -100,8 +103,10 @@ class ChecklistViewController: UITableViewController,
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        navigationController?.navigationBar.prefersLargeTitles = true
-        loadCheckListItems()
+        
+        navigationItem.largeTitleDisplayMode = .never
+        loadChecklistItems()
+        title = checklist.name
         
     }
 
@@ -111,6 +116,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     // MARK: - UITableViewDelegate methods:
+    
     override func tableView(_ tableView: UITableView,
                             didSelectRowAt indexPath: IndexPath)
     {
@@ -127,6 +133,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     // MARK: - UITableViewDataSource methods:
+    
     override func tableView(_ tableView: UITableView,
                             numberOfRowsInSection section: Int)
                             -> Int {
@@ -140,6 +147,7 @@ class ChecklistViewController: UITableViewController,
         let cell = tableView.dequeueReusableCell(
             withIdentifier: "ChecklistItem",
             for: indexPath)
+        
         let item = items[indexPath.row]
 
         configureText(forCell: cell, with: item)
@@ -191,6 +199,58 @@ class ChecklistViewController: UITableViewController,
     
     func saveChecklistItems() {
         let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(items)
+            try data.write(to: dataFilePath(), options: .atomic)
+        }
+        catch {
+            print("Could not write items to file!")
+        }
+    }
+    
+    func loadChecklistItems() {
+        if let data = try? Data(contentsOf: dataFilePath()) {
+            let decoder = PropertyListDecoder()
+            do {
+                items = try decoder.decode([ChecklistItem].self, from: data)
+            }
+            catch {
+                print("Couldn't read items from file!")
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+    func saveChecklistItems() {
+        let encoder = PropertyListEncoder()
         do {
             let data = try encoder.encode(items)
             try data.write(to: dataFilePath(), options: Data.WritingOptions.atomic)
@@ -211,6 +271,6 @@ class ChecklistViewController: UITableViewController,
             }
         }
     }
-    
+    */
 }
 
